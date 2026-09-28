@@ -10,132 +10,167 @@ import { Send, Loader2 } from "lucide-react";
 export default function ContactForm() {
   const { t } = useLanguage();
   const { toast } = useToast();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Substitua a string abaixo pelo seu ID gerado no Formspree
   const FORMSPREE_ID = "xyezpdqr";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setIsSubmitting(true);
 
-    const formData = new FormData(e.target);
+    const formData = new FormData(e.currentTarget);
 
     try {
-      const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Accept: "application/json",
-        },
+      const response = await fetch(
+        `https://formspree.io/f/${FORMSPREE_ID}`,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Falha no servidor de e-mail");
+      }
+
+      toast({
+        title:
+          t("contact.successTitle") ||
+          "Mensagem enviada com sucesso",
+        description:
+          t("contact.successText") ||
+          "Recebi seus dados e retornarei o contato em breve.",
       });
 
-      if (response.ok) {
-        toast({
-          title: t("contact.successTitle") || "Mensagem enviada com sucesso",
-          description: t("contact.successText") || "Recebi seus dados e retornarei o contato em breve.",
-        });
-        e.target.reset();
-      } else {
-        throw new Error("Falha no servidor de email");
-      }
+      e.currentTarget.reset();
     } catch (error) {
       toast({
         variant: "destructive",
-        title: t("contact.errorTitle") || "Falha no envio",
-        description: t("contact.errorText") || "Ocorreu um erro. Por favor, tente novamente mais tarde.",
+        title:
+          t("contact.errorTitle") ||
+          "Falha no envio",
+        description:
+          t("contact.errorText") ||
+          "Ocorreu um erro. Por favor, tente novamente mais tarde.",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-return (
-  <form onSubmit={handleSubmit} className="space-y-6">
-
-    {/* Honeypot anti-spam */}
-    <div
-      aria-hidden="true"
-      className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6"
+      autoComplete="on"
     >
-      <label htmlFor="_gotcha">
-        Do not fill this field
-      </label>
+      {/* Honeypot anti-spam.
+          Não remover e não alterar name="_gotcha". */}
+      <div
+        aria-hidden="true"
+        className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+      >
+        <label htmlFor="contact-gotcha">
+          Leave this field empty
+        </label>
 
-      <input
-        id="_gotcha"
-        type="text"
-        name="_gotcha"
-        tabIndex={-1}
-        autoComplete="off"
-      />
-    </div>
-
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <div className="space-y-2">
-        <Label htmlFor="name">
-          {t("contact.name") || "Nome Completo"}
-        </Label>
-
-        <Input
-          id="name"
-          name="name"
-          required
-          placeholder="Ex: Carlos Silva"
-          className="bg-background"
+        <input
+          id="contact-gotcha"
+          name="_gotcha"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">
-          {t("contact.email") || "E-mail Corporativo"}
-        </Label>
-
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          required
-          placeholder="carlos@empresa.com"
-          className="bg-background"
-        />
-      </div>
-    </div>
-
-    {/* restante do formulário */}
+      {/* Nome + E-mail */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="name">{t("contact.name") || "Nome Completo"}</Label>
-          <Input id="name" name="name" required placeholder="Ex: Carlos Silva" className="bg-background" />
+          <Label htmlFor="contact-name">
+            {t("contact.name") || "Nome Completo"}
+          </Label>
+
+          <Input
+            id="contact-name"
+            name="name"
+            type="text"
+            required
+            maxLength={100}
+            autoComplete="name"
+            placeholder="Ex: Alberto Carvalho"
+            className="bg-background"
+          />
         </div>
+
         <div className="space-y-2">
-          <Label htmlFor="email">{t("contact.email") || "E-mail Corporativo"}</Label>
-          <Input id="email" name="email" type="email" required placeholder="carlos@empresa.com" className="bg-background" />
+          <Label htmlFor="contact-email">
+            {t("contact.email") || "E-mail Corporativo"}
+          </Label>
+
+          <Input
+            id="contact-email"
+            name="email"
+            type="email"
+            required
+            maxLength={254}
+            autoComplete="email"
+            placeholder="carlos@empresa.com"
+            className="bg-background"
+          />
         </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="subject">{t("contact.subject") || "Assunto"}</Label>
-        <Input id="subject" name="subject" required placeholder="Consultoria em S&OP / Governança" className="bg-background" />
       </div>
 
+      {/* Assunto */}
       <div className="space-y-2">
-        <Label htmlFor="message">{t("contact.message") || "Mensagem"}</Label>
-        <Textarea 
-          id="message" 
-          name="message" 
-          required 
-          placeholder="Descreva o seu desafio logístico, necessidade de análise de dados ou projeto..." 
+        <Label htmlFor="contact-subject">
+          {t("contact.subject") || "Assunto"}
+        </Label>
+
+        <Input
+          id="contact-subject"
+          name="subject"
+          type="text"
+          required
+          maxLength={160}
+          autoComplete="off"
+          placeholder="Consultoria em S&OP / Governança"
+          className="bg-background"
+        />
+      </div>
+
+      {/* Mensagem */}
+      <div className="space-y-2">
+        <Label htmlFor="contact-message">
+          {t("contact.message") || "Mensagem"}
+        </Label>
+
+        <Textarea
+          id="contact-message"
+          name="message"
+          required
+          maxLength={5000}
+          autoComplete="off"
+          placeholder="Descreva o seu desafio logístico, necessidade de análise de dados ou projeto..."
           className="min-h-[160px] bg-background"
         />
       </div>
 
-      <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto px-8">
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full px-8 md:w-auto"
+      >
         {isSubmitting ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           <Send className="mr-2 h-4 w-4" />
         )}
+
         {t("contact.send") || "Enviar Mensagem"}
       </Button>
     </form>
