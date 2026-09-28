@@ -9,59 +9,70 @@ import { Send, Loader2 } from "lucide-react";
 
 export default function ContactForm() {
   const { t } = useLanguage();
-  const { toast } = useToast();
+  const { toast, dismiss } = useToast();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const FORMSPREE_ID = "xyezpdqr";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    setIsSubmitting(true);
+  dismiss();
+  setIsSubmitting(true);
 
-    const formData = new FormData(e.currentTarget);
+  const form = e.currentTarget;
+  const formData = new FormData(form);
 
-    try {
-      const response = await fetch(
-        `https://formspree.io/f/${FORMSPREE_ID}`,
-        {
-          method: "POST",
-          body: formData,
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Falha no servidor de e-mail");
+  try {
+    const response = await fetch(
+      `https://formspree.io/f/${FORMSPREE_ID}`,
+      {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
       }
+    );
 
-      toast({
-        title:
-          t("contact.successTitle") ||
-          "Mensagem enviada com sucesso",
-        description:
-          t("contact.successText") ||
-          "Recebi seus dados e retornarei o contato em breve.",
-      });
-
-      e.currentTarget.reset();
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title:
-          t("contact.errorTitle") ||
-          "Falha no envio",
-        description:
-          t("contact.errorText") ||
-          "Ocorreu um erro. Por favor, tente novamente mais tarde.",
-      });
-    } finally {
-      setIsSubmitting(false);
+    if (!response.ok) {
+      throw new Error(
+        `Formspree retornou HTTP ${response.status}`
+      );
     }
-  };
+
+    toast({
+      title:
+        t("contact.successTitle") ||
+        "Mensagem enviada com sucesso",
+      description:
+        t("contact.successText") ||
+        "Recebi seus dados e retornarei o contato em breve.",
+      duration: 4000,
+    });
+
+    form.reset();
+  } catch (error) {
+    console.error(
+      "Erro no envio do formulário:",
+      error
+    );
+
+    toast({
+      variant: "destructive",
+      title:
+        t("contact.errorTitle") ||
+        "Falha no envio",
+      description:
+        t("contact.errorText") ||
+        "Ocorreu um erro. Por favor, tente novamente mais tarde.",
+      duration: 5000,
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <form
