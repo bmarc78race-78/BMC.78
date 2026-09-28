@@ -1,24 +1,42 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { LanguageProvider } from '@/context/LanguageContext';
-import { ThemeProvider } from '@/context/ThemeContext';
-import SiteLayout from '@/components/layout/SiteLayout';
+import { lazy, Suspense } from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+} from "react-router-dom";
+
+import { LanguageProvider } from "@/context/LanguageContext";
+import { ThemeProvider } from "@/context/ThemeContext";
+
+import SiteLayout from "@/components/layout/SiteLayout";
 import { Toaster } from "@/components/ui/toaster";
 
-// Páginas Extraídas
-import Home from '@/pages/Home';
-import About from '@/pages/About';
-import Projects from '@/pages/Projects';
-import Contact from '@/pages/Contact';
+// Code splitting por página
+const Home = lazy(() => import("@/pages/Home"));
+const About = lazy(() => import("@/pages/About"));
+const Projects = lazy(() => import("@/pages/Projects"));
+const Contact = lazy(() => import("@/pages/Contact"));
 
-const queryClient = new QueryClient();
+function PageLoader() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+
+        <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          Carregando
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <ThemeProvider>
-          <Router>
+    <LanguageProvider>
+      <ThemeProvider>
+        <Router>
+          <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route element={<SiteLayout />}>
                 <Route path="/" element={<Home />} />
@@ -27,11 +45,12 @@ function App() {
                 <Route path="/contato" element={<Contact />} />
               </Route>
             </Routes>
-          </Router>
-        </ThemeProvider>
-      </LanguageProvider>
-      <Toaster />
-    </QueryClientProvider>
+          </Suspense>
+
+          <Toaster />
+        </Router>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 
