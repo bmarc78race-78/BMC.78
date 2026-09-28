@@ -5,7 +5,6 @@ import {
   Printer,
   FileText,
 } from "lucide-react";
-import { jsPDF } from "jspdf";
 
 import { useLanguage } from "@/context/LanguageContext";
 import {
@@ -22,12 +21,15 @@ export default function ResumeDownload() {
   const { lang, t } = useLanguage();
   const [open, setOpen] = useState(false);
 
-  const buildCV = (cvLang) => {
-    const data = resumeData[cvLang];
-    const doc = new jsPDF({
-      unit: "mm",
-      format: "a4",
-    });
+  const buildCV = async (cvLang) => {
+  const { jsPDF } = await import("jspdf");
+
+  const data = resumeData[cvLang];
+
+  const doc = new jsPDF({
+    unit: "mm",
+    format: "a4",
+  });
 
     const PAGE_WIDTH = 210;
     const PAGE_HEIGHT = 297;
@@ -350,15 +352,14 @@ export default function ResumeDownload() {
   };
 
   const download = (cvLang) => {
-    const doc =
-      buildCV(cvLang);
+  const doc = buildCV(cvLang);
 
-    doc.save(
-      cvLang === "pt"
-        ? "Bruno-Marques-Carvalho-CV-Executivo-PT.pdf"
-        : "Bruno-Marques-Carvalho-Executive-Resume-EN.pdf"
-    );
-  };
+  doc.save(
+    cvLang === "pt"
+      ? "Bruno-Carvalho-CV-Executivo.pdf"
+      : "Bruno-Carvalho-Executive-Resume-EN.pdf"
+  );
+};
 
   const preview =
     resumeData[
