@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { jsPDF } from "jspdf";
 import { resumeData } from "../src/components/contact/resumeData.js";
 
 const __filename = fileURLToPath(import.meta.url);
